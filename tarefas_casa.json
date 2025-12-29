@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "nome": "Troca do Gás",
+    "categoria": "Troca de Gás",
+    "data": "2026-03-23",
+    "repeticao": "A cada 3 meses",
+    "concluida": false
+  },
+  {
+    "id": 2,
+    "nome": "Aniversário Léo",
+    "categoria": "Aniversário",
+    "data": "2026-11-17",
+    "repeticao": "Anual",
+    "concluida": false
+  }
+]
