@@ -371,6 +371,9 @@ def historico():
     return render_template('historico.html', tarefas=tarefas_concluidas)
 
 
+#if __name__ == "__main__":
+#    app.run(debug=True)  # só para uso local
+
 if __name__ == "__main__":
     app.run(debug=True)  # só para uso local
 
