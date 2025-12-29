@@ -1,12 +1,29 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from datetime import datetime, timedelta
+from functools import wraps
 import json
 import os
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.config['SECRET_KEY'] = 'sua-chave-secreta-aqui-mude-em-producao'
 
 ARQUIVO_DADOS = 'tarefas_casa.json'
+
+# Credenciais (em produção, use hash de senha e banco de dados)
+USUARIOS = {
+    'admin': '123password'
+}
+
+
+def login_required(f):
+    """Decorator para proteger rotas que precisam de autenticação"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'usuario' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def carregar_tarefas():
@@ -99,7 +116,35 @@ def obter_alertas(tarefas):
     return alertas
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Página de login"""
+    if request.method == 'POST':
+        usuario = request.form.get('usuario', '').strip()
+        senha = request.form.get('senha', '').strip()
+        
+        if usuario in USUARIOS and USUARIOS[usuario] == senha:
+            session['usuario'] = usuario
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', erro='Usuário ou senha incorretos!')
+    
+    # Se já está logado, redireciona para o index
+    if 'usuario' in session:
+        return redirect(url_for('index'))
+    
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    """Faz logout do usuário"""
+    session.pop('usuario', None)
+    return redirect(url_for('login'))
+
+
 @app.route('/')
+@login_required
 def index():
     """Página principal"""
     tarefas = carregar_tarefas()
@@ -131,6 +176,7 @@ def index():
 
 
 @app.route('/adicionar', methods=['POST'])
+@login_required
 def adicionar_tarefa():
     """Adiciona uma nova tarefa"""
     try:
@@ -185,6 +231,7 @@ def adicionar_tarefa():
 
 
 @app.route('/concluir/<int:tarefa_id>', methods=['POST'])
+@login_required
 def concluir_tarefa(tarefa_id):
     """Marca uma tarefa como concluída ou a reagenda se for recorrente"""
     try:
@@ -243,6 +290,7 @@ def concluir_tarefa(tarefa_id):
 
 
 @app.route('/excluir/<int:tarefa_id>', methods=['POST'])
+@login_required
 def excluir_tarefa(tarefa_id):
     """Exclui uma tarefa"""
     try:
@@ -260,6 +308,7 @@ def excluir_tarefa(tarefa_id):
 
 
 @app.route('/editar/<int:tarefa_id>', methods=['GET', 'POST'])
+@login_required
 def editar_tarefa(tarefa_id):
     """Edita uma tarefa existente"""
     tarefas = carregar_tarefas()
@@ -305,6 +354,7 @@ def editar_tarefa(tarefa_id):
 
 
 @app.route('/historico')
+@login_required
 def historico():
     """Página com histórico de tarefas concluídas"""
     tarefas = carregar_tarefas()
