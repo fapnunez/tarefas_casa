@@ -371,10 +371,6 @@ def historico():
     return render_template('historico.html', tarefas=tarefas_concluidas)
 
 
-if __name__ == '__main__':
-    # Criar pasta templates se não existir
-    if not os.path.exists('templates'):
-        os.makedirs('templates')
-    
-    # Rodar servidor acessível na rede local
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)  # só para uso local
+
